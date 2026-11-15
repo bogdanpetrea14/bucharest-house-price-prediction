@@ -1,26 +1,47 @@
 import requests
 import json
+from pathlib import Path
 
-url = "https://www.storia.ro/ro/rezultate/vanzare/apartament/bucuresti"
-url2 = "https://www.publi24.ro/anunturi/imobiliare/de-vanzare/apartamente/bucuresti"
+BASE_URL = "https://www.storia.ro/ro/oferta/"
+PAGE_PAD = "?page="
+URL = "https://www.storia.ro/ro/rezultate/vanzare/apartament/bucuresti"
+URL2 = "https://www.publi24.ro/anunturi/imobiliare/de-vanzare/apartamente/bucuresti"
 
-marker = "__NEXT_DATA__"
+ROOT = Path(__file__).resolve().parent.parent  
+DATA_DIR = ROOT / "data"
+STORIA_DIR = DATA_DIR / "raw" / "storia"
 
-data = {}
+MARKER = "__NEXT_DATA__"
 
-headers = {
+HEADERS = {
     "User-Agent": "Mozilla/5.0 (Faculty Project)"
 }
 
-response = requests.get(url, headers=headers, timeout=30)
+def get_next_data(url):
+    response = requests.get(url, headers=HEADERS, timeout=30)
+    start = response.text.find(MARKER)
+    json_start = response.text.find(">", start)
+    json_end = response.text.find("</script>", json_start)
+    json_text = response.text[json_start + 1:json_end]
+    data = json.loads(json_text)
+    return data
 
-start = response.text.find(marker)
+def main():
+    data = get_next_data(URL)
+    items = data["props"]["pageProps"]["data"]["searchAds"]["items"]
 
-json_start = response.text.find(">", start)
-json_end = response.text.find("</script>", json_start)
+    pagination = data["props"]["pageProps"]["data"]["searchAds"]["pagination"]
+    number_of_pages = pagination["totalPages"]
 
-json_text = response.text[json_start + 1:json_end]
+    
+    
+    # slug = items[0]["slug"]
+    # ad_url = BASE_URL + slug
+    # print(ad_url)
 
-data = json.loads(json_text)
+    # ad_data = get_next_data(ad_url)
+    # print(ad_data["props"]["pageProps"]["ad"]["target"])
+    # print(ROOT)
 
-items = data["props"]["pageProps"]["data"]["searchAds"]["items"]
+if __name__ == "__main__":
+    main()
