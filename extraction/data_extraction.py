@@ -57,6 +57,8 @@ def main():
     pagination = data["props"]["pageProps"]["data"]["searchAds"]["pagination"]
     number_of_pages = pagination["totalPages"]
 
+    number_of_pages = number_of_pages
+
     for page in range(number_of_pages):
         str_for_page = URL + PAGE_PAD + str(page + 1)
 
